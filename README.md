@@ -18,70 +18,29 @@ adapts automatically to **light**, **dark**, and **system** preferences.
 
 ## Install
 
-The plugin is a client-side Cordis plugin shipped as an npm package. It has no
-host-side behavior — the whole skin lives in the browser half.
-
-### One-click install (recommended)
-
-Clone the repo and run the installer; it installs the package **and** enables
-it, so there is no YAML editing:
-
-```sh
-git clone https://github.com/LucasN0820/dsh-skin-claude-code
-cd dsh-skin-claude-code
-./install.sh
-```
-
-To target a different profile, pass its name:
-
-```sh
-./install.sh my-profile
-```
-
-The script is idempotent — running it twice is safe. On Windows, run it from
-Git Bash or WSL (`sh install.sh`).
-
-### Manual install
-
-If you prefer to wire it up yourself:
-
-**1. Add the package to your profile**
+The package is a DSH **bundle**: its `package.json` declares `dsh.bundle.patch`,
+so `dsh plugin add` installs it **and** auto-registers it as a profile layer.
+No `cordis.patch.yml` editing is required.
 
 ```sh
 dsh plugin --profile web add dsh-skin-claude-code
-```
-
-This forwards to pnpm inside the `web` profile directory, installing the
-package where the harness resolves out-of-tree plugins.
-
-> If you install from a local clone instead of the registry:
->
-> ```sh
-> dsh plugin --profile web add ../dsh-skin-claude-code
-> ```
-
-**2. Enable it in your profile patch**
-
-Add one row to your profile's `cordis.patch.yml`
-(`$DSH_HOME/profiles/web/cordis.patch.yml`, or `$DSH_HOME/cordis.patch.yml` for
-a home-wide override):
-
-```yaml
-- insert:
-    - id: claude-code-skin
-      name: dsh-skin-claude-code
-```
-
-`insert` appends the row at the top level of the composed entry list — the
-**browser plugin roster** where `dsh.client` rows live.
-
-**3. Restart**
-
-```sh
 dsh web
 ```
 
-The skin applies on load. Refresh the browser if it was already open.
+To target a different profile, change `--profile`. A convenience wrapper also
+ships in the repo:
+
+```sh
+./install.sh            # optional profile name, defaults to "web"
+```
+
+### Why no manual patch edit
+
+`dsh plugin add` forwards to pnpm inside the profile, then reconciles the
+profile's `dsh.profile.bundles` list: a dependency whose `package.json`
+declares `dsh.bundle.patch` is appended to that list automatically. On boot,
+the loader applies each bundle's own `cordis.patch.yml` (which inserts the
+skin's row), so the plugin mounts with no manual composition edits.
 
 ---
 
@@ -89,16 +48,17 @@ The skin applies on load. Refresh the browser if it was already open.
 
 ```sh
 dsh plugin --profile web remove dsh-skin-claude-code
+dsh web
 ```
-
-Remove the `claude-code-skin` row from your `cordis.patch.yml` and restart.
 
 ---
 
 ## How it works
 
-- `package.json` declares the client half through the `dsh.client` manifest:
-  `platform: web` and an `inject` on `@deepseek-ai/dsh-client-ui-theme`.
+- `package.json` declares two things:
+  - `dsh.bundle.patch` → `cordis.patch.yml`, which inserts the plugin row;
+  - `dsh.client` (`platform: web`, `inject` on `@deepseek-ai/dsh-client-ui-theme`),
+    which serves the browser half.
 - `lib/index.js` is the no-op host half (client-only plugins still export a
   host entry so the composition loader can resolve the row).
 - `lib/client.js` registers with `window.__ModuleLoader__`, then on activation:
@@ -116,7 +76,7 @@ updates.
 ## Customize
 
 Edit the `TOKENS` map and `CSS` template in `lib/client.js`, then republish (or
-install from your clone). The two files under `lib/` are hand-written build
+install from your clone). The files under `lib/` are hand-written build
 artifacts, so no bundler step is required to iterate.
 
 ## License

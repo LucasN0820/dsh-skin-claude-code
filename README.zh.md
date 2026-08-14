@@ -17,64 +17,25 @@
 
 ## 安装
 
-本插件是一个以 npm 包形式发布的客户端 Cordis 插件,没有宿主端逻辑——整层皮肤都活在浏览器半区。
-
-### 一键安装(推荐)
-
-克隆仓库并运行安装脚本;它会**安装并启用**插件,无需手改 YAML:
-
-```sh
-git clone https://github.com/LucasN0820/dsh-skin-claude-code
-cd dsh-skin-claude-code
-./install.sh
-```
-
-要指定其他 profile,传入其名称:
-
-```sh
-./install.sh my-profile
-```
-
-脚本是幂等的——重复运行也安全。Windows 下请在 Git Bash 或 WSL 中运行(`sh install.sh`)。
-
-### 手动安装
-
-如果你更想自己一步步来:
-
-**1. 将包加入你的 profile**
+本包是一个 DSH **bundle**:其 `package.json` 声明了 `dsh.bundle.patch`,因此
+`dsh plugin add` 会**既安装又自动注册**它为 profile 层,**无需修改 `cordis.patch.yml`**。
 
 ```sh
 dsh plugin --profile web add dsh-skin-claude-code
-```
-
-该命令会转发给 `web` profile 目录内的 pnpm,把包安装到 harness 解析树外插件的位置。
-
-> 如果你是从本地 clone 安装而非 registry:
->
-> ```sh
-> dsh plugin --profile web add ../dsh-skin-claude-code
-> ```
-
-**2. 在你的 profile patch 中启用它**
-
-在你的 profile 的 `cordis.patch.yml`
-(`$DSH_HOME/profiles/web/cordis.patch.yml`,或 `$DSH_HOME/cordis.patch.yml` 作为 home 级覆盖)里加:
-
-```yaml
-- insert:
-    - id: claude-code-skin
-      name: dsh-skin-claude-code
-```
-
-`insert` 会把这一行追加到组合条目列表的顶层——也就是 `dsh.client` 行所在的**浏览器插件清单**。
-
-**3. 重启**
-
-```sh
 dsh web
 ```
 
-皮肤会在加载时生效。如果浏览器已打开,刷新即可。
+要指定其他 profile,改 `--profile` 即可。仓库里还附带一个便捷脚本:
+
+```sh
+./install.sh            # 可选参数:profile 名,默认 web
+```
+
+### 为什么无需手改 patch
+
+`dsh plugin add` 会先转发给 profile 目录内的 pnpm,再对 `dsh.profile.bundles` 列表做一次对账:
+凡 `package.json` 声明了 `dsh.bundle.patch` 的依赖,会被自动追加进该列表。启动时,加载器应用每个
+bundle 自带的 `cordis.patch.yml`(其中包含插入皮肤行的 `- insert:`),因此插件无需任何手工组合编辑即可挂载。
 
 ---
 
@@ -82,15 +43,16 @@ dsh web
 
 ```sh
 dsh plugin --profile web remove dsh-skin-claude-code
+dsh web
 ```
-
-从 `cordis.patch.yml` 中删除 `claude-code-skin` 行并重启。
 
 ---
 
 ## 工作原理
 
-- `package.json` 通过 `dsh.client` 清单声明客户端半区:`platform: web`,并 `inject` 了 `@deepseek-ai/dsh-client-ui-theme`。
+- `package.json` 声明了两件事:
+  - `dsh.bundle.patch` → `cordis.patch.yml`,负责插入插件行;
+  - `dsh.client`(`platform: web`,`inject` 了 `@deepseek-ai/dsh-client-ui-theme`),负责提供浏览器半区。
 - `lib/index.js` 是空操作的宿主半区(纯客户端插件仍需导出一个宿主入口,组合加载器才能解析该行)。
 - `lib/client.js` 向 `window.__ModuleLoader__` 注册自身,激活后:
   - 调用 `ctx.theme.overrideTokens("dsh-skin-claude-code", TOKENS)` —— 在生效主题之上叠加一个可逆的令牌层,携带亮/暗两套取值;
@@ -102,7 +64,7 @@ dsh plugin --profile web remove dsh-skin-claude-code
 
 ## 自定义
 
-编辑 `lib/client.js` 里的 `TOKENS` 映射和 `CSS` 模板,然后重新发布(或从你的 clone 安装)。`lib/` 下的两个文件是手写的构建产物,迭代时无需任何打包步骤。
+编辑 `lib/client.js` 里的 `TOKENS` 映射和 `CSS` 模板,然后重新发布(或从你的 clone 安装)。`lib/` 下的文件是手写的构建产物,迭代时无需任何打包步骤。
 
 ## License
 
