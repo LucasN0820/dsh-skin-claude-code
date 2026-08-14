@@ -19,7 +19,29 @@
 
 本插件是一个以 npm 包形式发布的客户端 Cordis 插件,没有宿主端逻辑——整层皮肤都活在浏览器半区。
 
-### 1. 将包加入你的 profile
+### 一键安装(推荐)
+
+克隆仓库并运行安装脚本;它会**安装并启用**插件,无需手改 YAML:
+
+```sh
+git clone https://github.com/LucasN0820/dsh-skin-claude-code
+cd dsh-skin-claude-code
+node scripts/install.mjs
+```
+
+要指定其他 profile,传入其名称:
+
+```sh
+node scripts/install.mjs my-profile
+```
+
+脚本是幂等的——重复运行也安全。
+
+### 手动安装
+
+如果你更想自己一步步来:
+
+**1. 将包加入你的 profile**
 
 ```sh
 dsh plugin --profile web add dsh-skin-claude-code
@@ -33,37 +55,26 @@ dsh plugin --profile web add dsh-skin-claude-code
 > dsh plugin --profile web add ../dsh-skin-claude-code
 > ```
 
-### 2. 在你的 profile patch 中启用它
+**2. 在你的 profile patch 中启用它**
 
 在你的 profile 的 `cordis.patch.yml`
-(`$DSH_HOME/profiles/web/cordis.patch.yml`,或 `$DSH_HOME/cordis.patch.yml` 作为 home 级覆盖)里加一行:
+(`$DSH_HOME/profiles/web/cordis.patch.yml`,或 `$DSH_HOME/cordis.patch.yml` 作为 home 级覆盖)里加:
 
 ```yaml
-- id: claude-code-skin
-  name: dsh-skin-claude-code
+- insert:
+    - id: claude-code-skin
+      name: dsh-skin-claude-code
 ```
 
-这一行必须落在 **浏览器插件清单**(组合配置里列出 `dsh.client` 行的区块)。在你自己的 patch 层里用一个裸的 `insert` 即可实现;具体形态取决于你是否已有清单区块——见下方说明。
+`insert` 会把这一行追加到组合条目列表的顶层——也就是 `dsh.client` 行所在的**浏览器插件清单**。
 
-### 3. 重启
+**3. 重启**
 
 ```sh
 dsh web
 ```
 
 皮肤会在加载时生效。如果浏览器已打开,刷新即可。
-
-### patch 位置说明
-
-`cordis.patch.yml` 的层是按 `id` 替换目标行的整个 `config`。要**新增**一行而非修改已有行,请使用 `insert:` 块。向浏览器清单追加皮肤的最小自包含写法是:
-
-```yaml
-insert:
-  - id: claude-code-skin
-    name: dsh-skin-claude-code
-```
-
-把它放在 patch 文件的顶层。如果你是在一个已经自定义了清单的部署之上叠加,请对应地把 `insert:` 放到相同位置。
 
 ---
 

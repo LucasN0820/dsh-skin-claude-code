@@ -21,7 +21,30 @@ adapts automatically to **light**, **dark**, and **system** preferences.
 The plugin is a client-side Cordis plugin shipped as an npm package. It has no
 host-side behavior — the whole skin lives in the browser half.
 
-### 1. Add the package to your profile
+### One-click install (recommended)
+
+Clone the repo and run the installer; it installs the package **and** enables
+it, so there is no YAML editing:
+
+```sh
+git clone https://github.com/LucasN0820/dsh-skin-claude-code
+cd dsh-skin-claude-code
+node scripts/install.mjs
+```
+
+To target a different profile, pass its name:
+
+```sh
+node scripts/install.mjs my-profile
+```
+
+The script is idempotent — running it twice is safe.
+
+### Manual install
+
+If you prefer to wire it up yourself:
+
+**1. Add the package to your profile**
 
 ```sh
 dsh plugin --profile web add dsh-skin-claude-code
@@ -36,44 +59,28 @@ package where the harness resolves out-of-tree plugins.
 > dsh plugin --profile web add ../dsh-skin-claude-code
 > ```
 
-### 2. Enable it in your profile patch
+**2. Enable it in your profile patch**
 
 Add one row to your profile's `cordis.patch.yml`
 (`$DSH_HOME/profiles/web/cordis.patch.yml`, or `$DSH_HOME/cordis.patch.yml` for
 a home-wide override):
 
 ```yaml
-- id: claude-code-skin
-  name: dsh-skin-claude-code
+- insert:
+    - id: claude-code-skin
+      name: dsh-skin-claude-code
 ```
 
-The row must land in the **browser plugin roster** (the section of the composed
-config that lists the `dsh.client` rows). A bare `insert` in your own patch
-layer achieves this; the exact shape depends on whether you already have a
-roster block — see the note below.
+`insert` appends the row at the top level of the composed entry list — the
+**browser plugin roster** where `dsh.client` rows live.
 
-### 3. Restart
+**3. Restart**
 
 ```sh
 dsh web
 ```
 
 The skin applies on load. Refresh the browser if it was already open.
-
-### Patch placement note
-
-`cordis.patch.yml` layers replace a targeted row's whole `config` by `id`. To
-add a *new* row rather than edit an existing one, use an `insert:` block. The
-minimal, self-contained form that appends the skin to the browser roster is:
-
-```yaml
-insert:
-  - id: claude-code-skin
-    name: dsh-skin-claude-code
-```
-
-Place this at the top level of your patch file. If you are layering on top of a
-deployment that already customizes the roster, mirror its `insert:` location.
 
 ---
 
