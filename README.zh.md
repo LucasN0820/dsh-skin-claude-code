@@ -26,16 +26,16 @@
 ```sh
 git clone https://github.com/LucasN0820/dsh-skin-claude-code
 cd dsh-skin-claude-code
-node scripts/install.mjs
+./install.sh
 ```
 
 要指定其他 profile,传入其名称:
 
 ```sh
-node scripts/install.mjs my-profile
+./install.sh my-profile
 ```
 
-脚本是幂等的——重复运行也安全。
+脚本是幂等的——重复运行也安全。Windows 下请在 Git Bash 或 WSL 中运行(`sh install.sh`)。
 
 ### 手动安装
 

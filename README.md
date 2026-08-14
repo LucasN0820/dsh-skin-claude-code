@@ -29,16 +29,17 @@ it, so there is no YAML editing:
 ```sh
 git clone https://github.com/LucasN0820/dsh-skin-claude-code
 cd dsh-skin-claude-code
-node scripts/install.mjs
+./install.sh
 ```
 
 To target a different profile, pass its name:
 
 ```sh
-node scripts/install.mjs my-profile
+./install.sh my-profile
 ```
 
-The script is idempotent — running it twice is safe.
+The script is idempotent — running it twice is safe. On Windows, run it from
+Git Bash or WSL (`sh install.sh`).
 
 ### Manual install
 
