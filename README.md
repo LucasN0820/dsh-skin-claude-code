@@ -1,5 +1,7 @@
 # dsh-skin-claude-code
 
+English | [中文](README.zh.md)
+
 A **Claude Code–inspired skin** for the [DeepSeek Harness](https://github.com/deepseek-ai/deepseek-harness) web GUI.
 
 It restyles the browser surface with Claude Code's signature look:
