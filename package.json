@@ -24,6 +24,7 @@
   "files": [
     "lib/index.js",
     "lib/client.js",
+    "install.sh",
     "README.md",
     "README.zh.md",
     "LICENSE"
